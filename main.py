@@ -193,8 +193,6 @@ Remember: Your goal is to be the most reliable coding assistant possible. Users 
 
 def general_query(state: State):
     query = state["user_query"]
-    url = "https://wttr.in/{query}?format=%c+%t"
-    response = requests.get(url)
 
     SYSTEM_PROMPT = f"""
 # Enhanced General Query Assistant System Prompt
