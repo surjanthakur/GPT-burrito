@@ -75,11 +75,13 @@ Now process the user_query and return only the boolean result.
 """
 
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="moonshotai/kimi-k2-instruct",
         messages=[
             {"role": "assistant", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_query},
         ],
+        temperature=0.6,
+        max_completion_tokens=4096,
     )
     is_coding_q = response.choices[0].message.content
     state["is_coding_question"] = is_coding_q in ["true", "yes", "1"]
@@ -176,11 +178,13 @@ Remember: Your goal is to be the most reliable coding assistant possible. Users 
 """
 
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="moonshotai/kimi-k2-instruct",
         messages=[
             {"role": "assistant", "content": SYSTEM_PROMPT},
             {"role": "user", "content": query},
         ],
+        temperature=0.6,
+        max_completion_tokens=10000,
     )
     result = response.choices[0].message.content
     state["llm_result"] = result or ""
@@ -353,11 +357,13 @@ A successful response should:
 Remember: You're not just an information provider - you're a friendly, knowledgeable companion who genuinely enjoys helping people learn and solve problems. Every interaction should feel like talking to someone who really cares about making their day better!
 """
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="moonshotai/kimi-k2-instruct",
         messages=[
             {"role": "assistant", "content": SYSTEM_PROMPT},
             {"role": "user", "content": query},
         ],
+        temperature=0.6,
+        max_completion_tokens=4096,
     )
     result = response.choices[0].message.content
     state["llm_result"] = result or ""
