@@ -26,13 +26,15 @@ def get_weather(city: str):
 
 @tool()
 def web_search(query: str):
-    """if the user search query data not exist in llm data then call this internet search quwry tool"""
+    """If the user query cannot be answered from the LLM knowledge base or context,
+    invoke the web Search Query tool with the query text. Return results using the tool output.
+    """
     url = "https://www.googleapis.com/customsearch/v1"
     params = {"q": query, "key": GOOGLE_API_KEY, "cx": GOOGLE_CSE_ID}
 
     try:
-        res = requests.get(url, params=params)
-        results = res.json()
+        response = requests.get(url, params=params)
+        results = response.json()
 
         informations = []
         if "items" in results:
@@ -41,6 +43,6 @@ def web_search(query: str):
                     f"{item['title']}: {item['link']}\n{item.get('snippet', '')}"
                 )
 
-        return "\n\n".join(informations[:3])  # Top 3 results
+        return "\n\n".join(informations[:5])  # Top 5 results
     except Exception as e:
         return f"Error performing web search: {str(e)}"
