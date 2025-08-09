@@ -33,8 +33,8 @@ A powerful Streamlit-based AI chatbot application that integrates weather data, 
 1. **Clone the repository**
 
 ```bash
-git clone <your-repo-url>
-cd ai-chatbot-tools
+git clone <https://github.com/surjanthakur/GPT-burrito.git>
+cd persona
 ```
 
 2. **Install dependencies**
@@ -275,4 +275,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ and Python**
+**Made with ❤️ by surjan thakur**
