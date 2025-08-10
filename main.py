@@ -12,7 +12,7 @@ from typing import Annotated, List
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
-from tools import get_weather, web_search
+from tools import get_weather, web_search, send_email_tool
 from system_prompt import system_prompt
 
 load_dotenv()
@@ -23,7 +23,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 st.set_page_config(
     page_title="AI Agent with Tools",
     page_icon="🤖",
-    layout="centered",
+    layout="wide",  # "centered" se "wide" kar diya
     initial_sidebar_state="expanded",
 )
 
@@ -126,7 +126,7 @@ llm = init_chat_model(
     api_key=GROQ_API_KEY,
 )
 
-tools = [get_weather, web_search]
+tools = [get_weather, web_search, send_email_tool]
 llm_with_tools = llm.bind_tools(tools)
 
 
@@ -239,7 +239,7 @@ def main():
 
                 with col2:
                     st.markdown('<div class="delete-btn">', unsafe_allow_html=True)
-                    if st.button("🗑️", key=f"delete_{chat_id}", help="Delete chat"):
+                    if st.button("🧹", key=f"delete_{chat_id}", help="Delete chat"):
                         del st.session_state.chat_history[chat_id]
                         if chat_id == st.session_state.current_chat_id:
                             st.session_state.current_chat_id = None
@@ -256,8 +256,8 @@ def main():
         st.markdown(
             """
         <div style="text-align: center; color: #666; font-size: 0.8rem; margin-top: 2rem;">
-            <p>🤖 AI Agent</p>
-            <p>Weather • Web Search • Chat • Code</p>
+            <p>🤖 available Tools</p>
+            <p>Weather • Web Search • Chat • Code • email_sender</p>
         </div>
         """,
             unsafe_allow_html=True,
@@ -321,71 +321,44 @@ def main():
         # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # Display user message immediately
-        st.markdown(
-            f"""
-        <div class="user-message">
-            <strong>You:</strong><br>
-            {prompt}
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-
         # Get bot response
-        with st.spinner("🤔 Thinking and processing your request..."):
-            try:
-                # Create state with conversation history
-                langchain_messages = []
-                for msg in st.session_state.messages:
-                    if msg["role"] == "user":
-                        langchain_messages.append(HumanMessage(content=msg["content"]))
-                    else:
-                        langchain_messages.append(AIMessage(content=msg["content"]))
+        with st.spinner("🤔 Thinking..."):
+            # Create state with conversation history
+            langchain_messages = []
+            for msg in st.session_state.messages:
+                if msg["role"] == "user":
+                    langchain_messages.append(HumanMessage(content=msg["content"]))
+                else:
+                    langchain_messages.append(AIMessage(content=msg["content"]))
 
-                state = State(messages=langchain_messages)
+            state = State(messages=langchain_messages)
 
-                # Get response from the graph
-                response_container = st.empty()
-                full_response = ""
+            DB_URL = "mongodb://admin:admin@host.docker.internal:27017"
+            config = RunnableConfig(
+                configurable={"thread_id": st.session_state.current_chat_id}
+            )
 
-                DB_URL = "mongodb://admin:admin@host.docker.internal:27017"
-                config = RunnableConfig(
-                    configurable={"thread_id": st.session_state.current_chat_id}
-                )
-                with MongoDBSaver.from_conn_string(DB_URL) as checkpointer:
-                    mongo_graph = graph_with_checkpointing(checkpointer)
-                    for event in mongo_graph.stream(
-                        state, config=config, stream_mode="values"
-                    ):
-                        if "messages" in event and event["messages"]:
-                            last_message = event["messages"][-1]
-                            if (
-                                hasattr(last_message, "content")
-                                and last_message.content
-                            ):
-                                full_response = last_message.content
-                                response_container.markdown(
-                                    f"""
-                            <div class="assistant-message">
-                                <strong>🤖 Assistant:</strong><br>
-                                {full_response}
-                            </div>
-                            """,
-                                    unsafe_allow_html=True,
-                                )
+            assistant_response = None
 
-                # Add assistant response to chat history
-                if full_response:
-                    st.session_state.messages.append(
-                        {"role": "assistant", "content": full_response}
-                    )
+            with MongoDBSaver.from_conn_string(DB_URL) as checkpointer:
+                mongo_graph = graph_with_checkpointing(checkpointer)
+                for event in mongo_graph.stream(
+                    state, config=config, stream_mode="values"
+                ):
+                    if "messages" in event and event["messages"]:
+                        last_message = event["messages"][-1]
+                        # Only capture the final AIMessage response
+                        if (
+                            hasattr(last_message, "content")
+                            and hasattr(last_message, "type")
+                            and last_message.type == "ai"
+                        ):
+                            assistant_response = last_message.content
 
-            except Exception as e:
-                error_msg = f"❌ Sorry, I encountered an error: {str(e)}"
-                st.error(error_msg)
+            # Add the assistant response only once at the end
+            if assistant_response:
                 st.session_state.messages.append(
-                    {"role": "assistant", "content": error_msg}
+                    {"role": "assistant", "content": assistant_response}
                 )
 
         # Save current chat
