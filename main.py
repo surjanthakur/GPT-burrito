@@ -5,7 +5,6 @@ from langgraph.graph.message import add_messages
 from langchain.chat_models import init_chat_model
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-from langgraph.checkpoint.mongodb import MongoDBSaver  # type: ignore
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing_extensions import TypedDict
 from typing import Annotated, List
