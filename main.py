@@ -3,7 +3,7 @@ import streamlit as st
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph.message import add_messages
 from langchain.chat_models import init_chat_model
-from langgraph.graph import StateGraph, START
+from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.checkpoint.mongodb import MongoDBSaver  # type: ignore
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -12,7 +12,7 @@ from typing import Annotated, List
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
-from tools import get_weather, web_search
+from tools import get_weather, web_search, tweet_on_x
 from system_prompt import system_prompt
 
 load_dotenv()
@@ -126,7 +126,7 @@ llm = init_chat_model(
     api_key=GROQ_API_KEY,
 )
 
-tools = [get_weather, web_search]
+tools = [get_weather, web_search, tweet_on_x]
 llm_with_tools = llm.bind_tools(tools)
 
 
@@ -148,12 +148,10 @@ graph_builder.add_node("tools", tool_node)
 graph_builder.add_edge(START, "chatbot")
 graph_builder.add_conditional_edges("chatbot", tools_condition)
 graph_builder.add_edge("tools", "chatbot")
+graph_builder.add_edge("chatbot", END)
 
 
-# compile graph with checkpointing
-def graph_with_checkpointing(checkpointer):
-    compile_graph = graph_builder.compile(checkpointer=checkpointer)
-    return compile_graph
+graph = graph_builder.compile()
 
 
 # Initialize session state
@@ -257,7 +255,7 @@ def main():
             """
         <div style="text-align: center; color: #666; font-size: 0.8rem; margin-top: 2rem;">
             <p>🤖 available Tools</p>
-            <p>Weather • Web Search • Chat • Code • email_sender</p>
+            <p>Weather • Web Search • Chat • Code •post_tweet on X</p>
         </div>
         """,
             unsafe_allow_html=True,
@@ -333,27 +331,22 @@ def main():
 
             state = State(messages=langchain_messages)
 
-            DB_URL = "mongodb://admin:admin@host.docker.internal:27017"
             config = RunnableConfig(
                 configurable={"thread_id": st.session_state.current_chat_id}
             )
 
             assistant_response = None
 
-            with MongoDBSaver.from_conn_string(DB_URL) as checkpointer:
-                mongo_graph = graph_with_checkpointing(checkpointer)
-                for event in mongo_graph.stream(
-                    state, config=config, stream_mode="values"
-                ):
-                    if "messages" in event and event["messages"]:
-                        last_message = event["messages"][-1]
-                        # Only capture the final AIMessage response
-                        if (
-                            hasattr(last_message, "content")
-                            and hasattr(last_message, "type")
-                            and last_message.type == "ai"
-                        ):
-                            assistant_response = last_message.content
+            for event in graph.stream(state, config=config, stream_mode="values"):
+                if "messages" in event and event["messages"]:
+                    last_message = event["messages"][-1]
+                    # Only capture the final AIMessage response
+                    if (
+                        hasattr(last_message, "content")
+                        and hasattr(last_message, "type")
+                        and last_message.type == "ai"
+                    ):
+                        assistant_response = last_message.content
 
             # Add the assistant response only once at the end
             if assistant_response:

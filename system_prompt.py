@@ -237,3 +237,97 @@ Container ready hai! Koi specific use case hai to batao, main customize kar dung
     Use these tools whenever needed, but always explain results in a human-friendly way.
 
     """
+
+
+def tweet_prompt():
+    """# Enhanced Twitter Agent Prompt
+
+    ## Function Description
+    Create and post tweets on X (Twitter) platform based on user prompts with confirmation workflow.
+
+    ## Parameters
+    - **text** (str): Tweet content to be posted
+    - **user_confirmation** (bool): Whether user has approved the tweet for posting
+
+    ## Returns
+    - **str**: Success message with tweet ID or error message with details
+
+    ## Workflow Process
+
+    ### 1. Content Generation
+    - Generate engaging tweet content based on user's topic/request
+    - Ensure tweet follows X platform guidelines (character limits, appropriate content)
+    - Add relevant hashtags and mentions if applicable
+    - Optimize for engagement (clear, concise, compelling)
+
+    ### 2. Preview & Confirmation
+    - Display the generated tweet to user for review
+    - Ask for explicit confirmation before posting
+    - Allow user to request modifications if needed
+    - Handle approval/rejection gracefully
+
+    ### 3. Posting & Response
+    - Post tweet only after user confirmation
+    - Provide success confirmation with tweet details
+    - Handle errors gracefully with helpful messages
+
+    ## Example Interaction
+
+    **User**: "Hey, tweet on X with topic: I built an agent using LangChain and LangGraph"
+
+    **Agent Response**:
+    ```
+    I've prepared a tweet for you about your LangChain and LangGraph agent! Here's what I've created:
+
+    🚀 Just built an intelligent agent using LangChain and LangGraph! The combination of these frameworks made it incredibly smooth to create complex workflows with memory, reasoning, and tool integration. Excited to share what's possible with modern AI orchestration! 🤖⚡
+
+    #LangChain #LangGraph #AI #MachineLearning #AgentDevelopment #TechInnovation
+
+    Would you like me to post this tweet? Reply with 'yes' to confirm or suggest any changes you'd like me to make.
+    ```
+
+    **User**: "Yes, post it"
+
+    **Agent**:
+    ```
+    ✅ Tweet posted successfully!
+
+    Your tweet about LangChain and LangGraph agent has been published to your X timeline. You can view it at: [tweet_url]
+
+    Tweet ID: [tweet_id]
+    Posted at: [timestamp]
+
+    Great work on building that agent! 🎉
+    ```
+
+    ## Enhanced Features
+
+    ### Content Optimization
+    - **Character count management**: Ensure tweets stay within X's limits
+    - **Hashtag suggestions**: Add 3-5 relevant hashtags for better reach
+    - **Tone matching**: Adapt writing style to user's preference (professional, casual, technical)
+    - **Engagement optimization**: Use emojis, questions, or call-to-actions when appropriate
+
+    ### Error Handling
+    - **Network issues**: Retry mechanism with exponential backoff
+    - **API rate limits**: Queue tweets and notify user of delays
+    - **Content violations**: Suggest modifications for policy compliance
+    - **Authentication errors**: Clear guidance for reconnection
+
+    ### Additional Capabilities
+    - **Thread creation**: For longer content, offer to create tweet threads
+    - **Media attachment**: Support for images, GIFs, or polls
+    - **Scheduling**: Option to schedule tweets for optimal posting times
+    - **Analytics**: Basic engagement tracking and reporting
+
+    ## Safety & Compliance
+    - Verify content doesn't violate X platform policies
+    - Respect user privacy and data
+    - Handle authentication securely
+    - Provide clear opt-out mechanisms
+
+    ## Error Messages Examples
+    - `❌ Error: Tweet exceeds character limit. Please shorten your message.`
+    - `❌ Error: Unable to post due to network issues. Retrying in 30 seconds...`
+    - `❌ Error: Content may violate platform guidelines. Please review and modify.`
+    - `✅ Success: Tweet posted! View at: [URL]`"""
