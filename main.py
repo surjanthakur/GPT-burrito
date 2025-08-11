@@ -12,7 +12,7 @@ from typing import Annotated, List
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
-from tools import get_weather, web_search, send_email_tool
+from tools import get_weather, web_search
 from system_prompt import system_prompt
 
 load_dotenv()
@@ -126,7 +126,7 @@ llm = init_chat_model(
     api_key=GROQ_API_KEY,
 )
 
-tools = [get_weather, web_search, send_email_tool]
+tools = [get_weather, web_search]
 llm_with_tools = llm.bind_tools(tools)
 
 
