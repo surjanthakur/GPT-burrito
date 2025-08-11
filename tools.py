@@ -2,8 +2,6 @@ import os
 import requests
 from langchain_core.tools import tool
 from dotenv import load_dotenv
-import smtplib
-from email.mime.text import MIMEText
 
 load_dotenv()
 
@@ -48,23 +46,3 @@ def web_search(query: str):
         return "\n\n".join(informations[:5])  # Top 5 results
     except Exception as e:
         return f"Error performing web search: {str(e)}"
-
-
-@tool()
-def send_email_tool(to: str, subject: str, body: str):
-    """Send an email to the given address."""
-    sender_email = os.getenv("EMAIL_ADDRESS") or ""
-    sender_password = os.getenv("EMAIL_PASSWORD") or ""
-
-    msg = MIMEText(body)
-    msg["subject"] = subject
-    msg["from"] = sender_email or ""
-    msg["To"] = to
-
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, to, msg.as_string())
-        return f"Email sent successfully to {to}"
-    except Exception as e:
-        return f"Failed to send email: {str(e)}"
