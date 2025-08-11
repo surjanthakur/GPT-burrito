@@ -13,6 +13,8 @@ API_KEY = os.getenv("X_API_KEY")
 API_SECRET = os.getenv("X_API_SECRET")
 ACCESS_TOKEN = os.getenv("X_ACCESS_TOKEN")
 ACCESS_SECRET = os.getenv("X_ACCESS_SECRET")
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 
 @tool()
@@ -154,7 +156,7 @@ def tweet_on_x(text: str):
     try:
         # Authentication
         x_auth = tweepy.OAuth1UserHandler(
-            API_KEY, API_SECRET, ACCESS_TOKEN, ACCESS_SECRET
+            API_KEY, API_SECRET, ACCESS_TOKEN, ACCESS_SECRET, CLIENT_ID, CLIENT_SECRET
         )
         api = tweepy.API(x_auth, wait_on_rate_limit=True)
 
