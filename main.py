@@ -11,7 +11,7 @@ from typing import Annotated, List
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
-from tools import get_weather, web_search, tweet_on_x
+from tools import get_weather, web_search
 from system_prompt import system_prompt
 
 load_dotenv()
@@ -125,7 +125,7 @@ llm = init_chat_model(
     api_key=GROQ_API_KEY,
 )
 
-tools = [get_weather, web_search, tweet_on_x]
+tools = [get_weather, web_search]
 llm_with_tools = llm.bind_tools(tools)
 
 
@@ -254,7 +254,7 @@ def main():
             """
         <div style="text-align: center; color: #666; font-size: 0.8rem; margin-top: 2rem;">
             <p>🤖 available Tools</p>
-            <p>Weather • Web Search • Chat • Code •post_tweet on X</p>
+            <p>Weather • search internet • Chat • Code</p>
         </div>
         """,
             unsafe_allow_html=True,
